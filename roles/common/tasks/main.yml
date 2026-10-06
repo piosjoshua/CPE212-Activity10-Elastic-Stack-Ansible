@@ -1,0 +1,50 @@
+---
+- name: Install common prerequisites on Ubuntu
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - wget
+      - gnupg
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install common prerequisites on CentOS
+  ansible.builtin.dnf:
+    name:
+      - wget
+      - gnupg2
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Download Elastic signing key on Ubuntu
+  ansible.builtin.shell:
+    cmd: >
+      wget -qO -
+      https://artifacts.elastic.co/GPG-KEY-elasticsearch |
+      gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
+    creates: /usr/share/keyrings/elasticsearch-keyring.gpg
+  when: ansible_os_family == "Debian"
+
+- name: Add Elastic repository on Ubuntu
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/9.x/apt stable main"
+    state: present
+    filename: elastic-9.x
+  when: ansible_os_family == "Debian"
+
+- name: Import Elastic signing key on CentOS
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  when: ansible_os_family == "RedHat"
+
+- name: Add Elastic repository on CentOS
+  ansible.builtin.yum_repository:
+    name: elastic-9.x
+    description: Elastic repository for 9.x packages
+    baseurl: https://artifacts.elastic.co/packages/9.x/yum
+    gpgcheck: true
+    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    enabled: true
+  when: ansible_os_family == "RedHat"

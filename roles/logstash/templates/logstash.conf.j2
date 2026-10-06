@@ -1,0 +1,20 @@
+input {
+  tcp {
+    port => 5044
+    codec => json
+  }
+}
+
+filter {
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://127.0.0.1:9200"]
+    index => "activity10-logs-%{+YYYY.MM.dd}"
+  }
+
+  stdout {
+    codec => rubydebug
+  }
+}

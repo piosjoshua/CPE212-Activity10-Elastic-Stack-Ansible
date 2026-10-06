@@ -1,0 +1,4 @@
+---
+elastic_repo_major: "9.x"
+elasticsearch_host: "192.168.56.101"
+logstash_port: 5044

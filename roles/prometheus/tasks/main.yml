@@ -1,0 +1,123 @@
+---
+- name: Install packages on Ubuntu
+  apt:
+    name:
+      - wget
+      - tar
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install packages on CentOS
+  dnf:
+    name:
+      - wget
+      - tar
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Create Prometheus group
+  group:
+    name: "{{ prometheus_group }}"
+    state: present
+
+- name: Create Prometheus user
+  user:
+    name: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    system: yes
+    shell: /sbin/nologin
+
+- name: Create Prometheus config directory
+  file:
+    path: "{{ prometheus_config_dir }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: "0755"
+
+- name: Create Prometheus data directory
+  file:
+    path: "{{ prometheus_data_dir }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: "0755"
+
+- name: Download Prometheus
+  get_url:
+    url: "{{ prometheus_url }}"
+    dest: "/tmp/{{ prometheus_archive }}"
+    mode: "0644"
+
+- name: Extract Prometheus
+  unarchive:
+    src: "/tmp/{{ prometheus_archive }}"
+    dest: /tmp
+    remote_src: yes
+
+- name: Copy Prometheus binary
+  copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus"
+    dest: "{{ prometheus_bin_dir }}/prometheus"
+    remote_src: yes
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy Promtool binary
+  copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/promtool"
+    dest: "{{ prometheus_bin_dir }}/promtool"
+    remote_src: yes
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy Prometheus configuration
+  copy:
+    src: prometheus.yml
+    dest: "{{ prometheus_config_dir }}/prometheus.yml"
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: "0644"
+
+- name: Check Prometheus configuration
+  command: "{{ prometheus_bin_dir }}/promtool check config {{ prometheus_config_dir }}/prometheus.yml"
+  register: config_check
+  changed_when: false
+
+- name: Show configuration result
+  debug:
+    var: config_check.stdout
+
+- name: Create Prometheus service
+  template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Start Prometheus
+  systemd:
+    name: prometheus
+    state: started
+
+- name: Enable Prometheus
+  systemd:
+    name: prometheus
+    enabled: yes
+
+- name: Check Prometheus service
+  command: systemctl is-active prometheus
+  register: prometheus_status
+  changed_when: false
+
+- name: Show Prometheus status
+  debug:
+    var: prometheus_status.stdout

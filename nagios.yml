@@ -1,0 +1,16 @@
+---
+- name: Install Nagios on Ubuntu and CentOS servers
+  hosts: all
+  become: true
+
+  vars_prompt:
+    - name: nagios_web_password
+      prompt: "Enter Nagios web interface password"
+      private: true
+
+  roles:
+    - role: nagios_ubuntu
+      when: "'ubuntu_servers' in group_names"
+
+    - role: nagios_centos
+      when: "'centos_servers' in group_names"

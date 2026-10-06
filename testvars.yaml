@@ -1,0 +1,10 @@
+---
+-  name: Display Variables
+   hosts: linuxservers
+
+
+   tasks:
+
+    - name: Show Operating System
+      debug:
+        msg: "Host {{ inventory_hostname }} is running {{ os_type }}"

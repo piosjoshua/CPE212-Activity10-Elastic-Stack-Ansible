@@ -1,0 +1,20 @@
+---
+- name: Install Logstash
+  ansible.builtin.package:
+    name: logstash
+    state: present
+
+- name: Configure Logstash
+  ansible.builtin.template:
+    src: logstash.conf.j2
+    dest: /etc/logstash/conf.d/activity10.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Logstash
+
+- name: Enable and start Logstash
+  ansible.builtin.systemd:
+    name: logstash
+    enabled: true
+    state: started

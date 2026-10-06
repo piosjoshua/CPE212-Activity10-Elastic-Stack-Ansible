@@ -1,0 +1,5 @@
+---
+elastic_repo_major: "9.x"
+elasticsearch_http_port: 9200
+elasticsearch_transport_port: 9300
+elasticsearch_network_host: "0.0.0.0"

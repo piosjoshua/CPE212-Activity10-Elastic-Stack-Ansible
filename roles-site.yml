@@ -1,0 +1,19 @@
+---
+- name: Configure Web Servers
+  hosts: web_servers
+  become: true
+
+  roles:
+    - role: webserver
+      tags:
+        - web
+
+
+- name: Configure Database Servers
+  hosts: db_servers
+  become: true
+
+  roles:
+    - role: database
+      tags:
+        - db

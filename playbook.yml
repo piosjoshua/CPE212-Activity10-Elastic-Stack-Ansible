@@ -1,0 +1,24 @@
+---
+- name: Prepare all Elastic Stack servers
+  hosts: all
+  become: true
+  roles:
+    - common
+
+- name: Install Elasticsearch on all servers
+  hosts: all
+  become: true
+  roles:
+    - elasticsearch
+
+- name: Install Kibana on all servers
+  hosts: all
+  become: true
+  roles:
+    - kibana
+
+- name: Install Logstash on all servers
+  hosts: all
+  become: true
+  roles:
+    - logstash

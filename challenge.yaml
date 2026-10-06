@@ -1,0 +1,11 @@
+---
+
+- name: Supplementary Challenge
+  hosts: servers
+
+  tasks:
+
+    - name: Display Welcome
+      debug:
+        msg: "Welcome to Ansible Laboratory"
+  
